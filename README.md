@@ -1,172 +1,160 @@
-## Autonomous Delivery Agent
+Delivery Agent Simulation
+A comprehensive pathfinding simulation with multiple search algorithms and Pygame visualization. This project demonstrates various AI search techniques for package delivery in different terrain environments.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+Features
+🗺️ Map Types
+Small Map (5x5): Simple grid with basic obstacles
 
-A small research/teaching project for grid-based pathfinding and dynamic replanning. It provides classic search algorithms (BFS, UCS, A\*), local search strategies (hill climbing, simulated annealing), a simple dynamic agent that replans when obstacles appear, and scripts to log and plot performance metrics.
+Medium Map (10x10): Varied terrain patterns and obstacles
 
-### Features
+Large Map (15x15): Complex maze-like structure
 
-- **Static pathfinding**: BFS, UCS, A\*
-- **Local search / dynamic agent**: Hill Climbing, Simulated Annealing (with time-stepped replanning)
-- **CLI** for running algorithms on text-based maps
-- **Automatic logging** of runs and metrics
-- **Plot generation** of runtime, nodes expanded, and path cost
+Dynamic Map: Moving obstacles that change positions
 
-## Project structure
+🔍 Search Algorithms
+BFS (Breadth-First Search): Finds shortest path by steps
 
-```
-maps/
-  small.txt | medium.txt | large.txt | dynamic.txt
-results/
-  logs/run_log.txt
-  plots/metrics.csv, *.png
-src/
-  algorithms.py       # BFS, UCS, A*, hill_climbing, simulated_annealing
-  grid.py             # Grid loader, costs, dynamic obstacles, validity checks
-  dynamic.py          # DynamicAgent with replanning
-  cli.py              # Command-line interface
-  plot_results.py     # Reads metrics.csv and generates plots
-requirements.txt
-README.md
-```
+UCS (Uniform Cost Search): Finds lowest-cost path
 
-## Installation
+A* (A-Star Search): Most efficient with heuristic guidance
 
-- Python 3.10+ recommended.
+Replan: Adaptive algorithm for dynamic environments
 
-```bash
-python -m venv .venv
-# Windows PowerShell:
-. .venv/Scripts/Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
+🎮 Visualization
+Real-time path animation
 
-## Usage
+Color-coded terrain types
 
-Run algorithms via the CLI. Maps are in `maps/`. Each run prints the start/goal, path summary, and writes logs/metrics to `results/`.
+Dynamic obstacle movement
 
-### Static algorithms (BFS, UCS, A\*)
+Cost display on each cell
 
-- BFS
+Step-by-step execution tracking
 
-```bash
-python -m src.cli --map maps/small.txt --algorithm bfs
-```
+Installation
+Prerequisites
+Python 3.7+
 
-- UCS
+Pygame library
 
-```bash
-python -m src.cli --map maps/medium.txt --algorithm ucs
-```
+Usage
+Running the Simulation
+Execute the main script
 
-- A\*
+Choose option 1 for PyGame visualization
 
-```bash
-python -m src.cli --map maps/large.txt --algorithm a_star
-```
+Select map type (1-4):
 
-Metrics are logged to:
+1: Small map
 
-- Log file: `results/logs/run_log.txt`
-- CSV: `results/plots/metrics.csv` with columns: Algorithm, Map, PathLength, Cost, NodesExpanded, Runtime
+2: Medium map
 
-### Dynamic agent (replanning)
+3: Large map
 
-Dynamic runs use the agent, log detailed steps to `run_log.txt`, and also append limited metrics to `metrics.csv`:
+4: Dynamic map
 
-- PathLength: measured by time steps taken
-- Runtime: total time of the dynamic run
-- Cost and NodesExpanded are not applicable and recorded as NA
+Select algorithm (1-4):
 
-- Hill Climbing
+1: BFS
 
-```bash
-python -m src.cli --map maps/dynamic.txt --algorithm hill_climbing
-```
+2: UCS
 
-- Simulated Annealing
+3: A*
 
-```bash
-python -m src.cli --map maps/dynamic.txt --algorithm simulated_annealing
-```
+4: Replan
 
-Note: The CLI runs A\* in static mode when `--algorithm a_star` is provided. The dynamic agent strategies via CLI are `hill_climbing` and `simulated_annealing`.
+Controls During Animation
+ESC: Exit simulation
 
-## Maps
+Close Window: Quit application
 
-Map files are plain text. The first line contains six integers:
+Animation runs automatically with configurable delays
 
-- rows cols start_x start_y goal_x goal_y
+Algorithm Comparison
+BFS (Breadth-First Search)
+Pros: Guarantees shortest path by steps
 
-Subsequent lines are a grid where:
+Cons: Ignores terrain costs
 
-- `S` and `G` mark start/goal cells and count as cost 1
-- `#` marks blocked cells (impassable)
-- Digits `0-9` indicate traversal cost (e.g., `1` for normal)
-- Any other character defaults to cost 1
+Best for: Simple grids without cost considerations
 
-Example:
+UCS (Uniform Cost Search)
+Pros: Finds lowest-cost path
 
-```
-5 5 0 0 4 4
-S1111
-11111
-11#11
-11111
-1111G
-```
+Cons: Slower than BFS
 
-A demo dynamic obstacle schedule is encoded in `src/grid.py`:
+Best for: Cost-sensitive applications
 
-```python
-self.dynamic_obstacles = {
-    2: {(2, 2)},
-    4: {(3, 3)},
-}
-```
+A* (A-Star Search)
+Pros: Most efficient, combines cost + heuristic
 
-## Results and plotting
+Cons: Requires admissible heuristic
 
-After running static algorithms, generate plots from `results/plots/metrics.csv`:
+Best for: Most practical applications
 
-```bash
-python -m src.plot_results
-```
+Replan (Hill Climbing)
+Pros: Adapts to changing environments
 
-This creates:
+Cons: May not find optimal solution
 
-- `results/plots/runtime_comparison.png`
-- `results/plots/nodes_expanded.png`
-- `results/plots/path_cost.png`
+Best for: Dynamic obstacle scenarios
 
-The plotting script auto-detects whether the CSV has a header; no manual edits required.
+DeliveryAgent/
+├── Grid Class          # Manages terrain and obstacles
+├── Cell Class          # Individual grid cell properties
+├── DeliveryAgent Class # Implements search algorithms
+├── PygameVisualizer    # Handles visualization
+└── Map Creators        # Predefined map configurations
 
-## API overview
+Key Classes
+Grid: Manages the game world with terrain and obstacles
 
-- `src.algorithms`
-  - `bfs(grid, start, goal) -> (path, cost, nodes_expanded)`
-  - `ucs(grid, start, goal) -> (path, cost, nodes_expanded)`
-  - `a_star(grid, start, goal) -> (path, cost, nodes_expanded)`
-  - `hill_climbing(grid, start, goal) -> path | None`
-  - `simulated_annealing(grid, start, goal, ...) -> path | None`
-- `src.grid`
-  - `Grid(filename)` loads grid, costs, start/goal, and dynamic schedule
-  - `is_valid(x, y, time=0)`, `get_cost(x, y)`
-- `src.dynamic`
-  - `DynamicAgent(grid, start, goal, strategy)` with `move()` and internal replanning
+set_terrain(): Configure cell terrain types
 
-## Reproducibility and logs
+set_obstacle(): Add permanent/dynamic obstacles
 
-- All runs append to `results/logs/run_log.txt` with timestamps and summary.
-- Static metrics accumulate in `results/plots/metrics.csv`. You can append multiple runs for comparative plots.
+update_dynamic_obstacles(): Move dynamic obstacles
 
-## Troubleshooting
+DeliveryAgent: Implements pathfinding algorithms
 
-- No output plots: Ensure you’ve executed at least one static CLI run (BFS/UCS/A\*) to create `metrics.csv` before running `plot_results`.
-- File not found: Use absolute or correct relative path for `--map`.
-- Permission errors on Windows: Ensure the `results/` directory is writable; subdirectories are created automatically.
+bfs(): Breadth-first search implementation
 
-## License
+uniform_cost_search(): Cost-based search
 
-See `LICENSE` for details.
+a_star_search(): Heuristic-guided search
+
+hill_climbing_replan(): Adaptive search
+
+PygameVisualizer: Handles graphics and animation
+
+draw_grid(): Render the game world
+
+animate_path(): Show agent movement
+
+Future Enhancements
+Potential improvements:
+
+Multiple agents with interactions
+
+More search algorithms (IDA, D Lite)
+
+Improved dynamic obstacle handling
+
+Performance benchmarking suite
+
+Save/load map configurations
+
+License
+This project is for educational purposes. Feel free to modify and extend for learning AI pathfinding concepts.
+
+Contributing
+Suggestions and improvements welcome! Focus areas:
+
+Algorithm efficiency
+
+Visualization enhancements
+
+Additional map types
+
+Performance optimization
+
